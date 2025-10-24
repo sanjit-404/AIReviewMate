@@ -58,7 +58,7 @@ greet('Developer')`)
             CodeMentor AI
           </h1>
           
-          {/* Theme Toggle */}
+          {/* Theme Toggle - ONLY CHANGES PAGE THEME */}
           <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-full p-1 shadow-inner">
             <button
               onClick={() => setDarkMode(false)}
@@ -87,7 +87,7 @@ greet('Developer')`)
         
         {/* Main Content */}
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Code Editor - ALWAYS DARK */}
+          {/* Code Editor - ALWAYS DARK (theme="vs-dark" is fixed) */}
           <div className="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-700">
             <div className="p-1 bg-gray-800 border-b border-gray-700">
               <div className="flex gap-1.5 px-4 py-2">
@@ -101,40 +101,28 @@ greet('Developer')`)
               defaultLanguage="javascript" 
               value={code} 
               onChange={(v)=>setCode(v||'')} 
-              theme="vs-dark" // Always dark for code editor
+              theme="vs-dark" // ← PERMANENTLY DARK - NOT AFFECTED BY BUTTONS
               options={{
                 automaticLayout: true,
                 minimap: { enabled: false },
                 fontSize: 14,
                 lineHeight: 1.5,
-                fontFamily: 'Monaco, Menlo, Consolas, monospace'
               }} 
             />
             <div className="p-4 bg-gray-800 border-t border-gray-700">
               <button 
                 onClick={requestReview} 
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none disabled:hover:shadow-lg"
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50"
                 disabled={loading}
               >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Reviewing Code...
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>🔍</span>
-                    Review Code
-                  </div>
-                )}
+                {loading ? 'Reviewing Code...' : 'Review Code'}
               </button>
             </div>
           </div>
           
-          {/* Suggestions Panel */}
+          {/* Suggestions Panel - AFFECTED BY THEME BUTTONS */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <span>💡</span>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               AI Suggestions
             </h2>
             
@@ -149,30 +137,17 @@ greet('Developer')`)
                     {suggestion.category}
                   </span>
                 </div>
-                <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                  <DiffViewer 
-                    oldValue={code} 
-                    newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
-                    splitView={true} 
-                    hideLineNumbers={false} 
-                    showDiffOnly={false}
-                    styles={{
-                      diffContainer: {
-                        backgroundColor: darkMode ? '#1f2937' : 'white',
-                        color: darkMode ? '#f9fafb' : 'black',
-                      },
-                      line: {
-                        color: darkMode ? '#f9fafb' : 'black',
-                      }
-                    }}
-                  />
-                </div>
+                <DiffViewer 
+                  oldValue={code} 
+                  newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
+                  splitView={true} 
+                  hideLineNumbers={false} 
+                  showDiffOnly={false}
+                />
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <div className="text-4xl mb-4">👨‍💻</div>
                 <p>AI suggestions will appear here</p>
-                <p className="text-sm mt-2">Write some code and click Review Code</p>
               </div>
             )}
           </div>
