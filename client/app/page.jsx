@@ -16,31 +16,30 @@ greet('Developer')`)
   const [loading, setLoading] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
 
-  // Initialize theme
+  // SIMPLE theme setup
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const initialTheme = savedTheme ? savedTheme === 'dark' : systemPrefersDark
-    setDarkMode(initialTheme)
+    setDarkMode(savedTheme === 'dark')
   }, [])
 
-  // Apply theme to document
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [darkMode])
+  // SIMPLE theme functions
+  const setLightMode = () => {
+    console.log('LIGHT button clicked')
+    localStorage.setItem('theme', 'light')
+    setDarkMode(false)
+  }
+
+  const setDarkModeFunc = () => {
+    console.log('DARK button clicked')  
+    localStorage.setItem('theme', 'dark')
+    setDarkMode(true)
+  }
 
   async function requestReview() {
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL)
     setLoading(true)
     setSuggestion(null)
     try {
-      const resp = await axios.post((process.env.NEXT_PUBLIC_API_URL || '') + '/review', { code })
+      const resp = await axios.post((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/review', { code })
       setSuggestion(resp.data)
     } catch (err) {
       console.error(err)
@@ -50,109 +49,149 @@ greet('Developer')`)
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
-      <div className="container mx-auto p-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            CodeMentor AI
-          </h1>
-          
-          {/* Theme Toggle - ONLY CHANGES PAGE THEME */}
-          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-full p-1 shadow-inner">
-            <button
-              onClick={() => setDarkMode(false)}
-              className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
-                !darkMode 
-                  ? 'bg-white text-blue-600 shadow-md' 
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
+    <div style={{ 
+      backgroundColor: darkMode ? '#111827' : 'white', // Changed to dark grey
+      color: darkMode ? 'white' : 'black',
+      minHeight: '100vh',
+      padding: '24px'
+    }}>
+      {/* SIMPLE header */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '32px',
+        padding: '16px',
+        backgroundColor: darkMode ? '#1f2937' : '#f8fafc', // Changed to grey
+        borderRadius: '12px'
+      }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>CodeMentor AI</h1>
+        
+        {/* SIMPLE buttons */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={setLightMode}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              backgroundColor: !darkMode ? '#374151' : '#6b7280', // Changed to grey
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            ☀️ Light
+          </button>
+          <button
+            onClick={setDarkModeFunc}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              backgroundColor: darkMode ? '#4b5563' : '#d1d5db', // Changed to grey
+              color: darkMode ? 'white' : '#374151',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            🌙 Dark
+          </button>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+        {/* Code Editor - ALWAYS DARK */}
+        <div style={{ 
+          backgroundColor: '#111827', // Dark grey
+          borderRadius: '12px', 
+          overflow: 'hidden',
+          border: '2px solid #374151' // Grey border
+        }}>
+          <MonacoEditor 
+            height="400px" 
+            defaultLanguage="javascript" 
+            value={code} 
+            onChange={(v)=>setCode(v||'')} 
+            theme="vs-dark"
+            options={{
+              automaticLayout: true,
+              minimap: { enabled: false }
+            }} 
+          />
+          <div style={{ padding: '16px', backgroundColor: '#1f2937' }}> {/* Dark grey */}
+            <button 
+              onClick={requestReview} 
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#374151', // Changed to grey
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.5 : 1
+              }}
+              disabled={loading}
             >
-              <span className="text-lg">☀️</span>
-              Light
-            </button>
-            <button
-              onClick={() => setDarkMode(true)}
-              className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
-                darkMode 
-                  ? 'bg-gray-800 text-white shadow-md' 
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              <span className="text-lg">🌙</span>
-              Dark
+              {loading ? 'Reviewing...' : 'Review Code'}
             </button>
           </div>
         </div>
         
-        {/* Main Content */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Code Editor - ALWAYS DARK (theme="vs-dark" is fixed) */}
-          <div className="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-700">
-            <div className="p-1 bg-gray-800 border-b border-gray-700">
-              <div className="flex gap-1.5 px-4 py-2">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              </div>
-            </div>
-            <MonacoEditor 
-              height="55vh" 
-              defaultLanguage="javascript" 
-              value={code} 
-              onChange={(v)=>setCode(v||'')} 
-              theme="vs-dark" // ← PERMANENTLY DARK - NOT AFFECTED BY BUTTONS
-              options={{
-                automaticLayout: true,
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineHeight: 1.5,
-              }} 
-            />
-            <div className="p-4 bg-gray-800 border-t border-gray-700">
-              <button 
-                onClick={requestReview} 
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? 'Reviewing Code...' : 'Review Code'}
-              </button>
-            </div>
-          </div>
+        {/* Suggestions Panel */}
+        <div style={{ 
+          backgroundColor: darkMode ? '#1f2937' : 'white', // Changed to dark grey
+          border: `2px solid ${darkMode ? '#374151' : '#e5e7eb'}`, // Grey borders
+          borderRadius: '12px',
+          padding: '24px'
+        }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
+            AI Suggestions
+          </h2>
           
-          {/* Suggestions Panel - AFFECTED BY THEME BUTTONS */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              AI Suggestions
-            </h2>
-            
-            {suggestion ? (
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Suggestion</span>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{suggestion.explanation}</div>
+          {suggestion ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <span style={{ fontSize: '14px', fontWeight: '600' }}>Suggestion</span>
+                  <div style={{ 
+                    fontSize: '14px', 
+                    marginTop: '4px',
+                    color: darkMode ? '#d1d5db' : '#6b7280' // Grey text
+                  }}>
+                    {suggestion.explanation}
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                    {suggestion.category}
-                  </span>
                 </div>
-                <DiffViewer 
-                  oldValue={code} 
-                  newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
-                  splitView={true} 
-                  hideLineNumbers={false} 
-                  showDiffOnly={false}
-                />
+                <span style={{
+                  padding: '4px 12px',
+                  borderRadius: '9999px',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  backgroundColor: darkMode ? '#374151' : '#f1f5f9', // Grey backgrounds
+                  color: darkMode ? 'white' : '#374151' // Grey text
+                }}>
+                  {suggestion.category}
+                </span>
               </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <p>AI suggestions will appear here</p>
-              </div>
-            )}
-          </div>
+              <DiffViewer 
+                oldValue={code} 
+                newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
+                splitView={true} 
+                hideLineNumbers={false} 
+                showDiffOnly={false}
+              />
+            </div>
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '48px 0',
+              color: darkMode ? '#9ca3af' : '#6b7280' // Grey text
+            }}>
+              AI suggestions will appear here
+            </div>
+          )}
         </div>
       </div>
-    </main>
+    </div>
   )
 }
