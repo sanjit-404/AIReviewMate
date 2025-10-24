@@ -16,6 +16,7 @@ greet('Developer')`)
   const [loading, setLoading] = useState(false)
 
   async function requestReview() {
+    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL) // ← DEBUG LINE ADDED
     setLoading(true)
     setSuggestion(null)
     try {
