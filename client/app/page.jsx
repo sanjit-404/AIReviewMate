@@ -7,20 +7,37 @@ import DiffViewer from 'react-diff-viewer-continued'
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
 export default function Page() {
-  const [code, setCode] = useState(`function greet(name) {
-  console.log('Hello, ' + name)
-}
-
-greet('Developer')`)
+  const [code, setCode] = useState(`// Welcome to CodeMentor AI
+const greet = (name = 'Web Enthusiast') => {
+  return \`Hello, \${name}! Ready to level up your code?\`;
+}`)
   const [suggestion, setSuggestion] = useState(null)
   const [loading, setLoading] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
+  const [debouncedCode, setDebouncedCode] = useState('')
+  const [language, setLanguage] = useState('javascript') // ← ADDED LANGUAGE STATE
 
   // SIMPLE theme setup
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
     setDarkMode(savedTheme === 'dark')
   }, [])
+
+  // DEBOUNCING EFFECT
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedCode(code)
+    }, 1500) // Wait 1.5 seconds after user stops typing
+    
+    return () => clearTimeout(timer) // Cancel if user types again
+  }, [code])
+
+  // AUTO-REVIEW EFFECT
+  useEffect(() => {
+    if (debouncedCode && debouncedCode.trim().length > 10) { // Only if meaningful code
+      requestReview()
+    }
+  }, [debouncedCode])
 
   // SIMPLE theme functions
   const setLightMode = () => {
@@ -36,21 +53,74 @@ greet('Developer')`)
   }
 
   async function requestReview() {
+    if (loading) return // ← PREVENT MULTIPLE REQUESTS
+    
     setLoading(true)
     setSuggestion(null)
     try {
-      const resp = await axios.post((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/review', { code })
+      const resp = await axios.post((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/review', { 
+        code: debouncedCode || code, // Use debounced code if available
+        language: language // ← SEND LANGUAGE TO BACKEND
+      })
       setSuggestion(resp.data)
     } catch (err) {
       console.error(err)
-      alert('Review failed: ' + (err?.response?.data?.error || err.message || 'Unknown error'))
+      // Don't show alert for auto-requests to avoid spam
     }
     setLoading(false)
   }
 
+  // UPDATE DEFAULT CODE WHEN LANGUAGE CHANGES
+  useEffect(() => {
+    const defaultCode = {
+      javascript: `// Welcome to CodeMentor AI
+const greet = (name = 'Web Enthusiast') => {
+  return \`Hello, \${name}! Ready to level up your code?\`;
+}`,
+      python: `# Welcome to CodeMentor AI
+def greet(name="Web Enthusiast"):
+    return f"Hello, {name}! Ready to level up your code?"`,
+      java: `// Welcome to CodeMentor AI
+public class Main {
+    public static String greet(String name) {
+        return "Hello, " + (name != null ? name : "Web Enthusiast") + "! Ready to level up your code?";
+    }
+}`,
+      cpp: `// Welcome to CodeMentor AI
+#include <string>
+using namespace std;
+
+string greet(string name = "Web Enthusiast") {
+    return "Hello, " + name + "! Ready to level up your code?";
+}`,
+      html: `<!DOCTYPE html>
+<!-- Welcome to CodeMentor AI -->
+<html>
+<head>
+    <title>CodeMentor AI</title>
+</head>
+<body>
+    <h1>Hello, Web Enthusiast! Ready to level up your code?</h1>
+</body>
+</html>`,
+      css: `/* Welcome to CodeMentor AI */
+.welcome-message {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    text-align: center;
+    margin: 2rem;
+}
+
+.welcome-message::before {
+    content: "Hello, Web Enthusiast! Ready to level up your code?";
+}`
+    }
+    setCode(defaultCode[language])
+  }, [language])
+
   return (
     <div style={{ 
-      backgroundColor: darkMode ? '#111827' : 'white', // Changed to dark grey
+      backgroundColor: darkMode ? '#1f2937' : 'white',
       color: darkMode ? 'white' : 'black',
       minHeight: '100vh',
       padding: '24px'
@@ -62,19 +132,41 @@ greet('Developer')`)
         alignItems: 'center',
         marginBottom: '32px',
         padding: '16px',
-        backgroundColor: darkMode ? '#1f2937' : '#f8fafc', // Changed to grey
+        backgroundColor: darkMode ? '#374151' : '#f3f4f6',
         borderRadius: '12px'
       }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>CodeMentor AI</h1>
         
         {/* SIMPLE buttons */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {/* LANGUAGE SELECTOR - ADDED */}
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              backgroundColor: darkMode ? '#4b5563' : '#f3f4f6',
+              color: darkMode ? 'white' : 'black',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+          </select>
+
           <button
             onClick={setLightMode}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              backgroundColor: !darkMode ? '#374151' : '#6b7280', // Changed to grey
+              backgroundColor: !darkMode ? '#4b5563' : '#9ca3af',
               color: 'white',
               border: 'none',
               cursor: 'pointer'
@@ -87,8 +179,8 @@ greet('Developer')`)
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              backgroundColor: darkMode ? '#4b5563' : '#d1d5db', // Changed to grey
-              color: darkMode ? 'white' : '#374151',
+              backgroundColor: darkMode ? '#6b7280' : '#d1d5db', 
+              color: darkMode ? 'white' : '#4b5563',
               border: 'none',
               cursor: 'pointer'
             }}
@@ -102,14 +194,14 @@ greet('Developer')`)
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
         {/* Code Editor - ALWAYS DARK */}
         <div style={{ 
-          backgroundColor: '#111827', // Dark grey
+          backgroundColor: '#111827', 
           borderRadius: '12px', 
           overflow: 'hidden',
-          border: '2px solid #374151' // Grey border
+          border: '2px solid #374151'
         }}>
           <MonacoEditor 
             height="400px" 
-            defaultLanguage="javascript" 
+            language={language} // ← CHANGED TO DYNAMIC LANGUAGE
             value={code} 
             onChange={(v)=>setCode(v||'')} 
             theme="vs-dark"
@@ -118,13 +210,13 @@ greet('Developer')`)
               minimap: { enabled: false }
             }} 
           />
-          <div style={{ padding: '16px', backgroundColor: '#1f2937' }}> {/* Dark grey */}
+          <div style={{ padding: '16px', backgroundColor: '#1f2937' }}>
             <button 
               onClick={requestReview} 
               style={{
                 width: '100%',
                 padding: '12px',
-                backgroundColor: '#374151', // Changed to grey
+                backgroundColor: '#4b5563',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -140,13 +232,13 @@ greet('Developer')`)
         
         {/* Suggestions Panel */}
         <div style={{ 
-          backgroundColor: darkMode ? '#1f2937' : 'white', // Changed to dark grey
-          border: `2px solid ${darkMode ? '#374151' : '#e5e7eb'}`, // Grey borders
+          backgroundColor: darkMode ? '#374151' : 'white',
+          border: `2px solid ${darkMode ? '#4b5563' : '#e5e7eb'}`,
           borderRadius: '12px',
           padding: '24px'
         }}>
           <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
-            AI Suggestions
+            AI Suggestions {loading && '(Analyzing...)'}
           </h2>
           
           {suggestion ? (
@@ -157,7 +249,7 @@ greet('Developer')`)
                   <div style={{ 
                     fontSize: '14px', 
                     marginTop: '4px',
-                    color: darkMode ? '#d1d5db' : '#6b7280' // Grey text
+                    color: darkMode ? '#d1d5db' : '#6b7280'
                   }}>
                     {suggestion.explanation}
                   </div>
@@ -167,8 +259,8 @@ greet('Developer')`)
                   borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: '500',
-                  backgroundColor: darkMode ? '#374151' : '#f1f5f9', // Grey backgrounds
-                  color: darkMode ? 'white' : '#374151' // Grey text
+                  backgroundColor: darkMode ? '#4b5563' : '#e5e7eb',
+                  color: darkMode ? 'white' : '#374151'
                 }}>
                   {suggestion.category}
                 </span>
@@ -180,12 +272,58 @@ greet('Developer')`)
                 hideLineNumbers={false} 
                 showDiffOnly={false}
               />
+              
+              {/* ✅ ACCEPT/DECLINE BUTTONS */}
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                <button 
+                  onClick={() => {
+                    setCode(suggestion.improved_code || suggestion.improvedCode || '')
+                    setSuggestion(null)
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    flex: 1
+                  }}
+                >
+                  ✅ Accept Changes
+                </button>
+                <button 
+                  onClick={() => setSuggestion(null)}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    flex: 1
+                  }}
+                >
+                  ❌ Decline
+                </button>
+              </div>
+            </div>
+          ) : loading ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '48px 0',
+              color: darkMode ? '#9ca3af' : '#6b7280'
+            }}>
+              <div style={{ fontSize: '18px', marginBottom: '8px' }}>🔄</div>
+              Analyzing your code...
             </div>
           ) : (
             <div style={{ 
               textAlign: 'center', 
               padding: '48px 0',
-              color: darkMode ? '#9ca3af' : '#6b7280' // Grey text
+              color: darkMode ? '#9ca3af' : '#6b7280'
             }}>
               AI suggestions will appear here
             </div>

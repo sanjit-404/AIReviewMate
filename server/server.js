@@ -24,7 +24,7 @@ app.use(express.json());
 app.get('/', (req, res) => res.send('CodeMentor AI Server running'));
 
 app.post('/review', async (req, res) => {
-  const { code } = req.body;
+  const { code, language = 'javascript' } = req.body; // ← ADD LANGUAGE HERE
   if (!code) return res.status(400).json({ error: 'Code input is required.' });
 
   if (!process.env.GOOGLE_API_KEY) {
@@ -38,7 +38,7 @@ app.post('/review', async (req, res) => {
         {
           parts: [
             {
-              text: `You are an AI code reviewer. Respond with JSON: { "category":"Best Practices|Bug Fix|Performance Improvement", "explanation":"...", "improved_code":"..." }\nCode:\n${code}`
+              text: `You are an AI code reviewer for ${language}. Analyze the following ${language} code and respond with JSON: { "category":"Best Practices|Bug Fix|Performance Improvement", "explanation":"...", "improved_code":"..." }\nCode:\n${code}` // ← ADD LANGUAGE TO PROMPT
             }
           ]
         }
