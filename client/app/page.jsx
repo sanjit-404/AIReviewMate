@@ -50,87 +50,130 @@ greet('Developer')`)
   }
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">CodeMentor AI</h1>
-          <div className="flex gap-2">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
+      <div className="container mx-auto p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            CodeMentor AI
+          </h1>
+          
+          {/* Theme Toggle */}
+          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-full p-1 shadow-inner">
             <button
               onClick={() => setDarkMode(false)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
                 !darkMode 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                  ? 'bg-white text-blue-600 shadow-md' 
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
-              ☀️ Light
+              <span className="text-lg">☀️</span>
+              Light
             </button>
             <button
               onClick={() => setDarkMode(true)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
                 darkMode 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                  ? 'bg-gray-800 text-white shadow-md' 
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
-              🌙 Dark
+              <span className="text-lg">🌙</span>
+              Dark
             </button>
           </div>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
+        {/* Main Content */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Code Editor - ALWAYS DARK */}
+          <div className="bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-700">
+            <div className="p-1 bg-gray-800 border-b border-gray-700">
+              <div className="flex gap-1.5 px-4 py-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              </div>
+            </div>
             <MonacoEditor 
-              height="60vh" 
+              height="55vh" 
               defaultLanguage="javascript" 
               value={code} 
               onChange={(v)=>setCode(v||'')} 
-              theme={darkMode ? 'vs-dark' : 'vs-light'}
-              options={{automaticLayout:true, minimap:{enabled:false}}} 
+              theme="vs-dark" // Always dark for code editor
+              options={{
+                automaticLayout: true,
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineHeight: 1.5,
+                fontFamily: 'Monaco, Menlo, Consolas, monospace'
+              }} 
             />
-            <div className="mt-3">
+            <div className="p-4 bg-gray-800 border-t border-gray-700">
               <button 
                 onClick={requestReview} 
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors w-full" 
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none disabled:hover:shadow-lg"
                 disabled={loading}
               >
-                {loading ? 'Reviewing…' : 'Review Code'}
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Reviewing Code...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <span>🔍</span>
+                    Review Code
+                  </div>
+                )}
               </button>
             </div>
           </div>
-          <div>
+          
+          {/* Suggestions Panel */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 border-2 border-gray-200 dark:border-gray-700 transition-all duration-300">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <span>💡</span>
+              AI Suggestions
+            </h2>
+            
             {suggestion ? (
-              <div className="mt-4 border border-gray-200 dark:border-gray-700 p-4 rounded bg-white dark:bg-gray-800 shadow">
-                <div className="flex justify-between items-center mb-2">
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
                   <div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">Suggestion</span>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{suggestion.explanation}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{suggestion.explanation}</div>
                   </div>
-                  <div>
-                    <span className="px-2 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                      {suggestion.category}
-                    </span>
-                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                    {suggestion.category}
+                  </span>
                 </div>
-                <DiffViewer 
-                  oldValue={code} 
-                  newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
-                  splitView={true} 
-                  hideLineNumbers={false} 
-                  showDiffOnly={false}
-                  styles={{
-                    diffContainer: {
-                      backgroundColor: darkMode ? '#1f2937' : 'white',
-                      color: darkMode ? '#f9fafb' : 'black',
-                    },
-                    line: {
-                      color: darkMode ? '#f9fafb' : 'black',
-                    }
-                  }}
-                />
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <DiffViewer 
+                    oldValue={code} 
+                    newValue={suggestion.improved_code || suggestion.improvedCode || ''} 
+                    splitView={true} 
+                    hideLineNumbers={false} 
+                    showDiffOnly={false}
+                    styles={{
+                      diffContainer: {
+                        backgroundColor: darkMode ? '#1f2937' : 'white',
+                        color: darkMode ? '#f9fafb' : 'black',
+                      },
+                      line: {
+                        color: darkMode ? '#f9fafb' : 'black',
+                      }
+                    }}
+                  />
+                </div>
               </div>
             ) : (
-              <div className="mt-4 text-gray-500 dark:text-gray-400">AI suggestions will appear here.</div>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="text-4xl mb-4">👨‍💻</div>
+                <p>AI suggestions will appear here</p>
+                <p className="text-sm mt-2">Write some code and click Review Code</p>
+              </div>
             )}
           </div>
         </div>
