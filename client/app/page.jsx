@@ -19,7 +19,7 @@ greet('Developer')`)
     setLoading(true)
     setSuggestion(null)
     try {
-      const resp = await axios.post((process.env.NEXT_PUBLIC_SERVER_URL || '') + '/review', { code })
+      const resp = await axios.post((process.env.NEXT_PUBLIC_API_URL || '') + '/review', { code })
       setSuggestion(resp.data)
     } catch (err) {
       console.error(err)
