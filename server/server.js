@@ -13,7 +13,10 @@ const GEMINI_MODEL = 'gemini-2.0-flash';
   console.warn('GOOGLE_API_KEY is missing. Please check your .env file.');
 }*/
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://ai-review-mate-xi.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => res.send('CodeMentor AI Server running'));
