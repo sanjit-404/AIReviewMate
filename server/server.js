@@ -14,8 +14,10 @@ const GEMINI_MODEL = 'gemini-2.0-flash';
 }*/
 
 app.use(cors({
-  origin: ['https://ai-review-mate-xi.vercel.app', 'http://localhost:3000'],
-  credentials: true
+  origin: ['https://ai-review-mate-xi.vercel.app', 'https://ai-review-mate-*.vercel.app', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
