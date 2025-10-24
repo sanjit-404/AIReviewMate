@@ -7,16 +7,16 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const GEMINI_MODEL = 'gemini-2.0-flash';
 
-if (process.env.GOOGLE_API_KEY) {
-  console.log('✅ GOOGLE_API_KEY loaded successfully.');
+/*if (process.env.GOOGLE_API_KEY) {
+  console.log('GOOGLE_API_KEY loaded successfully.');
 } else {
-  console.warn('❌ GOOGLE_API_KEY is missing. Please check your .env file.');
-}
+  console.warn('GOOGLE_API_KEY is missing. Please check your .env file.');
+}*/
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('✅ CodeMentor AI Server running'));
+app.get('/', (req, res) => res.send('CodeMentor AI Server running'));
 
 app.post('/review', async (req, res) => {
   const { code } = req.body;
@@ -50,7 +50,7 @@ app.post('/review', async (req, res) => {
 
     const data = await r.json();
     if (data.error) {
-      console.error('❌ Gemini API Error:', data.error);
+      console.error('Gemini API Error:', data.error);
       return res.status(500).json({ error: data.error });
     }
 
@@ -87,4 +87,4 @@ app.post('/review', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 Server listening on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
