@@ -5,7 +5,7 @@ const fetch = require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const GEMINI_MODEL = 'gemini-3.6-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash'; 
 
 /*if (process.env.GOOGLE_API_KEY) {
   console.log('GOOGLE_API_KEY loaded successfully.');
